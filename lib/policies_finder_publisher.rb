@@ -83,10 +83,11 @@ private
       },
       {
         key: "organisations",
+        name: "Organisations",
         short_name: "From",
         type: "text",
         display_as_result_metadata: true,
-        filterable: false
+        filterable: true
       },
     ]
   end
