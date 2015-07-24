@@ -3,9 +3,15 @@ require "rails_helper"
 RSpec.describe PolicyFirehoseFinderPublisher do
   let(:publisher) { described_class.new }
 
-  describe "#exportable_attributes" do
+  describe "#finder_attributes" do
     it "validates against govuk-content-schema" do
       expect(publisher.exportable_attributes.as_json).to be_valid_against_schema('finder')
+    end
+  end
+
+  describe "#email_alert_signup_attributes" do
+    it "validates against govuk-content-schema" do
+      expect(publisher.exportable_attributes.as_json).to be_valid_against_schema('email_alert_signup')
     end
   end
 end

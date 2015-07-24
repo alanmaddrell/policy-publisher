@@ -11,58 +11,123 @@ require "gds_api/publishing_api"
 class PolicyFirehoseFinderPublisher
 
   def publish
-    publishing_api.put_content_item(base_path, exportable_attributes)
+    publishing_api.put_content_item(finder_base_path, finder_attributes)
+    publishing_api.put_content_item(email_alert_signup_base_path, email_alert_signup_attributes)
   end
 
-  def exportable_attributes
+  def finder_attributes
     {
       format: "finder",
       content_id: "ccb6c301-2c64-4a59-88c9-0528d0ffd088",
-      title: "All policy content",
+      title: name,
       description: "",
       public_updated_at: public_updated_at,
       locale: "en",
       update_type: "major",
       publishing_app: "policy-publisher",
       rendering_app: "finder-frontend",
-      routes: routes,
-      details: details,
+      routes: finder_routes,
+      details: finder_details,
       links: {
         organisations: [],
         related: [],
-        email_alert_signup: ["452903cf-de2d-4b9f-a412-a5cc06256450"],
+        email_alert_signup: [email_alert_signup_content_id],
       },
+    }
+  end
+
+  def email_alert_signup_attributes
+    {
+      format: "email_alert_signup",
+      content_id: email_alert_signup_content_id,
+      title: name,
+      description: "",
+      public_updated_at: public_updated_at,
+      locale: "en",
+      update_type: "major",
+      publishing_app: "policy-publisher",
+      rendering_app: "email-alert-frontend",
+      routes: email_alert_signup_routes,
+      details: email_alert_signup_details,
+      links: {},
     }
   end
 
 private
 
-  def base_path
+  def finder_base_path
     "/government/policies/all"
+  end
+
+  def email_alert_signup_base_path
+    "#{finder_base_path}/email-signup"
+  end
+
+  def email_alert_signup_content_id
+    "452903cf-de2d-4b9f-a412-a5cc06256450"
+  end
+
+  def name
+    "All policy content"
+  end
+
+  def updated_at
+    policy.updated_at
   end
 
   def public_updated_at
     File.mtime(File.dirname(__FILE__))
   end
 
-  def routes
+  def email_alert_signup_routes
     [
       {
-        path: base_path,
+        path: email_alert_signup_base_path,
+        type: "exact",
+      },
+    ]
+  end
+
+  def finder_routes
+    [
+      {
+        path: finder_base_path,
         type: "exact",
       },
       {
-        path: "#{base_path}.json",
+        path: "#{finder_base_path}.json",
         type: "exact",
       },
       {
-        path: "#{base_path}.atom",
+        path: "#{finder_base_path}.atom",
         type: "exact",
       }
     ]
   end
 
-  def details
+  def email_alert_signup_details
+    {
+      breadcrumbs: breadcrumbs,
+      summary: email_alert_signup_summary,
+      tags: {
+        policy: all_policy_slugs,
+      },
+      govdelivery_title: name,
+    }
+  end
+
+  def all_policy_slugs
+    Policy.all.map(&:slug)
+  end
+
+  def email_alert_signup_summary
+    %q[
+      You'll get an email each time a document about
+      this policy is published or updated.
+    ]
+  end
+
+  def finder_details
     {
       document_noun: "documents",
       filter: {},
@@ -288,6 +353,15 @@ private
       {
         label: "Worldwide priority",
         value: "worldwide-priority",
+      }
+    ]
+  end
+
+  def breadcrumbs
+    [
+      {
+        title: name,
+        link: finder_base_path,
       }
     ]
   end
